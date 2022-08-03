@@ -1,42 +1,6 @@
 import cuid from 'cuid';
 import { logger as loggerFactory } from './logger';
-
-export enum JobStatus {
-  NONQUEUED = 'nonqueued',
-  PENDING = 'pending',
-  RUNNING = 'running',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-}
-
-type Job<T> = {
-  id: string;
-  status: JobStatus;
-  args: T;
-  startedAt?: Date;
-  finishedAt?: Date;
-};
-
-type Handler<T> = (payload: T) => unknown | Promise<unknown>;
-export interface Worker<T> {
-  createJob: (payload: T) => string;
-  listJobs: () => Job<T>[];
-  getJob: (jobId: string) => Job<T> | undefined;
-}
-
-type QueueArgs<T> = {
-  name: string;
-  handler: Handler<T>;
-  options?: {
-    maxConcurrency: number;
-  };
-};
-
-type UpdateJobData = {
-  status?: JobStatus;
-  startedAt?: Date;
-  finishedAt?: Date;
-};
+import { Job, JobStatus, QueueArgs, UpdateJobData, Worker } from './types';
 
 export function queue<T>({ name, handler, options }: QueueArgs<T>): Worker<T> {
   const jobs: Job<T>[] = [];
