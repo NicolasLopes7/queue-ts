@@ -25,7 +25,8 @@ export type QueueArgs<T> = {
   name: string;
   handler: Handler<T>;
   options?: {
-    maxConcurrency: number;
+    maxConcurrency?: number;
+    logging?: false;
   };
 };
 
