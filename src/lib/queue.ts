@@ -19,7 +19,7 @@ type Job<T> = {
 
 type Handler<T> = (payload: T) => unknown | Promise<unknown>;
 export interface Worker<T> {
-  createJob: (payload: T) => Promise<string>;
+  createJob: (payload: T) => string;
   listJobs: () => Job<T>[];
   getJob: (jobId: string) => Job<T> | undefined;
 }
@@ -104,7 +104,7 @@ export function queue<T>({ name, handler, options }: QueueArgs<T>): Worker<T> {
     });
   };
 
-  const createJob = async (payload: T) => {
+  const createJob = (payload: T) => {
     const job = {
       args: payload,
       id: cuid(),
