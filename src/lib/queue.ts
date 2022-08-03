@@ -41,9 +41,9 @@ type UpdateJobData = {
 export function queue<T>({ name, handler, options }: QueueArgs<T>): Worker<T> {
   const jobs: Job<T>[] = [];
   setInterval(() => {
-    console.table(jobs)
-    console.log('------')
-  }, 1000)
+    console.table(jobs);
+    console.log();
+  }, 1000);
   const logger = loggerFactory(`Queue(${name})`);
 
   const wrapAsync = (jobId: string, fn: () => unknown | Promise<unknown>) => {
@@ -53,19 +53,19 @@ export function queue<T>({ name, handler, options }: QueueArgs<T>): Worker<T> {
           status: JobStatus.RUNNING,
           startedAt: new Date(),
         });
-        logger.info(`${jobId} | running`);
+        logger.info(`${jobId} - running`);
         await fn();
         updateJob(jobId, {
           status: JobStatus.COMPLETED,
           finishedAt: new Date(),
         });
-        logger.info(`${jobId} | completed`);
+        logger.info(`${jobId} - completed`);
       } catch (error) {
         updateJob(jobId, {
           status: JobStatus.FAILED,
           finishedAt: new Date(),
         });
-        logger.error(`${jobId} | failed`);
+        logger.error(`${jobId} - failed`);
       } finally {
         const nextPendingJob = jobs.find(
           (job) => job.status === JobStatus.PENDING
@@ -110,7 +110,7 @@ export function queue<T>({ name, handler, options }: QueueArgs<T>): Worker<T> {
       id: cuid(),
       status: JobStatus.NONQUEUED,
     };
-    logger.info(`new job | ${JSON.stringify(job, null, 1)}`);
+    logger.info(`new job - ${JSON.stringify(job, null, 1)}`);
     evaluate(job);
 
     return job.id;
