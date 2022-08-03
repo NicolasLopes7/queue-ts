@@ -4,10 +4,7 @@ import { Job, JobStatus, QueueArgs, UpdateJobData, Worker } from './types';
 
 export function queue<T>({ name, handler, options }: QueueArgs<T>): Worker<T> {
   const jobs: Job<T>[] = [];
-  setInterval(() => {
-    console.table(jobs);
-    console.log();
-  }, 1000);
+
   const logger = loggerFactory(`Queue(${name})`);
 
   const wrapAsync = (jobId: string, fn: () => unknown | Promise<unknown>) => {

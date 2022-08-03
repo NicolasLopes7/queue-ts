@@ -21,4 +21,10 @@ server.get('/', (req, res) => {
 
 server.listen(4000, () => {
   console.log('running at http://localhost:4000');
+
+  setInterval(() => {
+    const jobs = testQueue.listJobs();
+    console.log(jobs);
+    console.log();
+  }, 1000);
 });
