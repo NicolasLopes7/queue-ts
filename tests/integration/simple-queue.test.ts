@@ -1,9 +1,9 @@
 import { queue } from '../../src/lib/queue';
 import { Job } from '../../src/lib/types';
+import { TestQueueJobArgs } from './common';
 
 describe('simple queue', () => {
   const handlerMockFn = jest.fn(() => {});
-  type TestQueueJobArgs = { name: string };
 
   const testQueue = queue<TestQueueJobArgs>({
     name: 'test',

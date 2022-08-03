@@ -6,7 +6,7 @@ import { wrapAsyncFactory } from './wrapAsync';
 export function queue<T>({ name, handler, options }: QueueArgs<T>): Worker<T> {
   const jobs: Job<T>[] = [];
 
-  const logger = loggerFactory(`Queue(${name})`);
+  const logger = loggerFactory(`Queue(${name})`, options?.logging ?? true);
 
   const next = () => {
     const nextPendingJob = jobs.find((job) => job.status === JobStatus.PENDING);
