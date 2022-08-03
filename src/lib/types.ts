@@ -34,3 +34,5 @@ export type UpdateJobData = {
   startedAt?: Date;
   finishedAt?: Date;
 };
+
+export type UpdateJobCB = (jobId: string, updateJobData: UpdateJobData) => void;

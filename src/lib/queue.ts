@@ -1,41 +1,30 @@
 import cuid from 'cuid';
 import { logger as loggerFactory } from './logger';
 import { Job, JobStatus, QueueArgs, UpdateJobData, Worker } from './types';
+import { wrapAsyncFactory } from './wrapAsync';
 
 export function queue<T>({ name, handler, options }: QueueArgs<T>): Worker<T> {
   const jobs: Job<T>[] = [];
 
   const logger = loggerFactory(`Queue(${name})`);
 
-  const wrapAsync = (jobId: string, fn: () => unknown | Promise<unknown>) => {
-    setImmediate(async () => {
-      try {
-        updateJob(jobId, {
-          status: JobStatus.RUNNING,
-          startedAt: new Date(),
-        });
-        logger.info(`${jobId} - running`);
-        await fn();
-        updateJob(jobId, {
-          status: JobStatus.COMPLETED,
-          finishedAt: new Date(),
-        });
-        logger.info(`${jobId} - completed`);
-      } catch (error) {
-        updateJob(jobId, {
-          status: JobStatus.FAILED,
-          finishedAt: new Date(),
-        });
-        logger.error(`${jobId} - failed`);
-      } finally {
-        const nextPendingJob = jobs.find(
-          (job) => job.status === JobStatus.PENDING
-        );
-        if (!nextPendingJob) return;
-        return evaluate(nextPendingJob);
-      }
+  const next = () => {
+    const nextPendingJob = jobs.find((job) => job.status === JobStatus.PENDING);
+    if (!nextPendingJob) return;
+    return evaluate(nextPendingJob);
+  };
+
+  const updateJob = (jobId: string, updateJobData: UpdateJobData) => {
+    const jobIndex = jobs.findIndex((job) => job.id === jobId);
+    if (jobIndex === -1) return;
+
+    Object.entries(updateJobData).forEach(([key, value]) => {
+      // @ts-ignore
+      jobs[jobIndex][key] = value;
     });
   };
+
+  const wrapAsync = wrapAsyncFactory(updateJob, next);
 
   const evaluate = (job: Job<T>) => {
     if (job.status === JobStatus.NONQUEUED)
@@ -53,16 +42,6 @@ export function queue<T>({ name, handler, options }: QueueArgs<T>): Worker<T> {
     }
 
     return;
-  };
-
-  const updateJob = (jobId: string, updateJobData: UpdateJobData) => {
-    const jobIndex = jobs.findIndex((job) => job.id === jobId);
-    if (jobIndex === -1) return;
-
-    Object.entries(updateJobData).forEach(([key, value]) => {
-      // @ts-ignore
-      jobs[jobIndex][key] = value;
-    });
   };
 
   const createJob = (payload: T) => {

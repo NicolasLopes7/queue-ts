@@ -24,7 +24,7 @@ server.listen(4000, () => {
 
   setInterval(() => {
     const jobs = testQueue.listJobs();
-    console.log(jobs);
+    console.table(jobs);
     console.log();
   }, 1000);
 });
