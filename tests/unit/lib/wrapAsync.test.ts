@@ -1,34 +1,20 @@
 import { wrapAsyncFactory } from '../../../src/lib/wrapAsync';
 
-const makeSUT = (fn: () => void) => {
-  const updateJobMockFn = jest.fn(() => {});
-  const nextMockFn = jest.fn(() => {});
-  const handler = jest.fn(fn);
-
-  const wrapAsync = wrapAsyncFactory(updateJobMockFn, nextMockFn);
-
-  return { updateJobMockFn, nextMockFn, wrapAsync, handler };
-};
-
+const noop = () => {};
 describe('wrapAsync', () => {
-  it('success case', async () => {
-    const SUT = makeSUT(() => {});
+  it('should call callbacks', async () => {
+    const updateJobMockFn = jest.fn(noop);
+    const nextMockFn = jest.fn(noop);
+    const handler = jest.fn(noop);
 
-    await SUT.wrapAsync('test', SUT.handler);
+    const wrapAsync = wrapAsyncFactory(updateJobMockFn, nextMockFn);
 
-    setImmediate(() => {
-      expect(SUT.updateJobMockFn).toHaveBeenCalledTimes(2);
-      expect(SUT.handler).toHaveBeenCalledTimes(1);
-      expect(SUT.nextMockFn).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  it('error case', async () => {
-    const SUT = makeSUT(() => {});
+    wrapAsync('test', handler);
 
     setImmediate(() => {
-      expect(SUT.handler).toHaveBeenCalledTimes(1);
-      expect(SUT.nextMockFn).toHaveBeenCalledTimes(1);
+      expect(updateJobMockFn).toHaveBeenCalledTimes(2);
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(nextMockFn).toHaveBeenCalledTimes(1);
     });
   });
 });
